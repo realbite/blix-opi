@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CardServiceResponse RequestType="CardPayment" ApplicationSender="SmartPOS"
+WorkstationID="POS001" POPID="001" RequestID="73010227700679" OverallResult="Success"
+xmlns="http://www.nrf-arts.org/IXRetail/namespace">
+<Terminal TerminalID="1" TerminalBatch="69" STAN="6813"/>
+<Tender CardEntryMode="Swipe" UsedPaymentMethod="Debit" PrintVAT="false"
+SuppressUnitPrice="false">
+<TotalAmount Currency="USD">6.69</TotalAmount>
+<Authorization AcquirerID="BUYPASS" CardPAN="0000000000001559"
+CardPANPrint="************1559" TimeStamp="2017-05-27T13:45:03-04:00"
+ApprovalCode="896224" CardCircuit="Debit DEBX"/>
+</Tender>
+<SaleItem ItemID="46176" ItemStatus="true" EvaluateOnly="false" PriceChangeEligible="true">
+<ProductCode>400</ProductCode>
+<Amount>6.69</Amount>
+<UnitMeasure>EA</UnitMeasure>
+<UnitPrice>6.25</UnitPrice>
+<Quantity>1</Quantity>
+<MerchandiseCode>11</MerchandiseCode>
+</SaleItem>
+</CardServiceResponse>

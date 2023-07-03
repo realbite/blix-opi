@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DeviceRequest RequestID="2.3" WorkstationID="1" ApplicationSender="MICROS" RequestType="Output">
+<Output OutDeviceTarget="Printer">
+<TextLine> Demo Res</TextLine>
+<TextLine>ORACLE Demo Store</TextLine>
+<TextLine>888 Test Ave., Columbia,MD</TextLine>
+<TextLine/>
+<TextLine> Customer Copy</TextLine>
+<TextLine/>
+<TextLine>Merchant ID : Simulator123456</TextLine>
+<TextLine>Terminal ID : 12345678</TextLine>
+<TextLine/>
+<TextLine>Trans. Type : SALE</TextLine>
+<TextLine/>
+<TextLine>Cardh. Name : Mr A BMSTESTCARDA5603</TextLine>
+<TextLine>Card No.
+: XXXXXXXXXXXX0002</TextLine>
+<TextLine>Card Type
+: VISA</TextLine>
+<TextLine>Exp. Date
+: 9912</TextLine>
+<TextLine/>
+<TextLine>Trans. Time : 26/06/2020 15:37</TextLine>
+<TextLine>Trace No.
+: 400814</TextLine>
+<TextLine>RRN
+: 851388</TextLine>
+<TextLine>Offline Auth: N</TextLine>
+<TextLine>Auth Code
+: 830842</TextLine>
+<TextLine/>
+<TextLine>App Label
+: Personal Account</TextLine>
+<TextLine>AID
+: A000000#####0801</TextLine>
+<TextLine>AC
+: 52A80ACE8E0D9CA4</TextLine>
+<TextLine/>
+<TextLine>AMOUNT
+: ??5.00</TextLine>
+<TextLine> TOTAL
+: ??5.00</TextLine>
+<TextLine/>
+<TextLine>Approved</TextLine>
+<TextLine/>
+<TextLine>I agree to the terms of my</TextLine>
+<TextLine>credit agreement.</TextLine>
+</Output>
+</DeviceRequest>

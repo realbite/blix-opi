@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CardServiceResponse RequestID="2" WorkstationID="1" OverallResult="Success"
+ApplicationSender="XSTORE" RequestType="CardPayment">
+<Terminal STAN="851388" TerminalID="12345678" MerchantID="Simulator123456"/>
+<Tender>
+<TotalAmount Currency="GBP">5.00</TotalAmount>
+<Authorization CardPAN="XXXXXX******0002" ExpiryDate=###### CardType="80" CardCircuit="VISA"
+EntryMode="ICC" AcquirerID="UNKNOWN" AcquirerTransactionReference="851388" TimeStamp="2020-06-
+26T15:37:12" ApprovalCode="830842"/>
+</Tender><CardValue CardType="80" EntryMode="ICC" LoyaltyEligible="true">
+<CardPAN>XXXXXX******0002</CardPAN>
+<EndDate>####</EndDate>
+<CardCircuit>VISA</CardCircuit>
+<Token>VaultCardToken123</Token>
+<VaultCardToken>VaultCardToken123</VaultCardToken>
+</CardValue>
+<PaymentProviderName>oracle.eftlink.opiretail.OPIRetailCore</PaymentProviderName>
+</CardServiceResponse>

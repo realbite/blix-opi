@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DeviceRequest RequestType="Output" ApplicationSender="FPOS" WorkstationID="POS001"
+POPID="001" RequestID="FPOS_1_052717134511_138458"
+xmlns="http://www.nrf-arts.org/IXRetail/namespace">
+<Output OutDeviceTarget="Printer" Copies="1" OriginalCopy="1" ReceiptRecipient="Customer">
+<TextLine ReceiptZone="PaymentDetails">Merch# : FW37368161001</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Shift# : 1</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Debit : USD$6.69</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Purchase</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Card# : US DEBIT</TextLine>
+<TextLine ReceiptZone="PaymentDetails">************1559</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Auth Code: 896224</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Invoice# : 20918</TextLine>
+<TextLine ReceiptZone="PaymentDetails">STAN : 6813</TextLine>
+<TextLine ReceiptZone="PaymentDetails">APPROVED 896224</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Chip Read</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Verified By PIN</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Mode: Issuer</TextLine>
+<TextLine ReceiptZone="PaymentDetails">AID: A0000000980840</TextLine>
+<TextLine ReceiptZone="PaymentDetails">TVR: 8080048000</TextLine>
+<TextLine ReceiptZone="PaymentDetails">IAD: 06010A03600000</TextLine>
+<TextLine ReceiptZone="PaymentDetails">TSI: 6800</TextLine>
+<TextLine ReceiptZone="PaymentDetails">ARC: 00</TextLine>
+<TextLine ReceiptZone="PaymentDetails">--------------------</TextLine>
+</Output>
+<Output OutDeviceTarget="Printer" Copies="1" OriginalCopy="1" ReceiptRecipient="Store">
+<TextLine ReceiptZone="PaymentDetails">Merch# : FW37368161001</TextLine><TextLine ReceiptZone="PaymentDetails">Shift# : 1</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Debit : USD$6.69</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Purchase</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Card# : US DEBIT</TextLine>
+<TextLine ReceiptZone="PaymentDetails">************1559</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Auth Code: 896224</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Invoice# : 20918</TextLine>
+<TextLine ReceiptZone="PaymentDetails">STAN : 6813</TextLine>
+<TextLine ReceiptZone="PaymentDetails">APPROVED 896224</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Chip Read</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Verified By PIN</TextLine>
+<TextLine ReceiptZone="PaymentDetails">Mode: Issuer</TextLine>
+<TextLine ReceiptZone="PaymentDetails">AID: A0000000980840</TextLine>
+<TextLine ReceiptZone="PaymentDetails">TVR: 8080048000</TextLine>
+<TextLine ReceiptZone="PaymentDetails">IAD: 06010A03600000</TextLine>
+<TextLine ReceiptZone="PaymentDetails">TSI: 6800</TextLine>
+<TextLine ReceiptZone="PaymentDetails">ARC: 00</TextLine>
+<TextLine ReceiptZone="PaymentDetails">--------------------</TextLine>
+</Output>
+</DeviceRequest>
