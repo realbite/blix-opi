@@ -3,7 +3,7 @@ require 'logger'
 
 l = Logger.new(STDOUT)
 $VERBOSE=true
-c = OPI::Connection.new(:local_port=>2000, :remote_port=>2000, :logger=>l, :timeout_1=>1)
+c = OPI::Connection.new(:local_port=>2000, :remote_port=>2100, :logger=>l, :timeout_1=>1)
 
 100.times do
    puts c.request('ħello ') rescue nil

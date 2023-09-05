@@ -25,6 +25,7 @@ register a handler to handle any device requests from the terminal.
 
       def output(info)
         send_to_printer info['lines'].map{|l| l['text']}.join("\n")
+        OPI::Result::Success
       end
 
     end
@@ -33,8 +34,8 @@ configure the interface to the terminal and create a connection object
 
     options = {
        :logger            # a logger object
-       :application_id    #
-       :workstation_id    #
+       :application_id    # the name of the application for log on terminal
+       :workstation_id    # the name of the workstation for log on terminal
        :local_port        # port to listen on
        :remote_host       # terminal ip
        :remote_port       # terminal port

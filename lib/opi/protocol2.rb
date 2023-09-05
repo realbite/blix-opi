@@ -1,16 +1,23 @@
 # frozen_string_literal: true
-module OPI
-  # handle the parsing and formatting of xml requests and responses.
 
+module OPI
+  # perform requests to the server... format the request into
+  # OPI protocol xml then send to the server using the connection.
+  # parse the returned xml and extract key fields to use
+  # as an appropriate return value.
   class Protocol
 
     HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
-    def initialize(options={})
-      @workstation_id = options[:workstation_id] || 'WORKSTATION'
-      @application_id = options[:application_id] || 'POS'
+    def initialize(connection, options)
+      @workstation_id = options[:workstation_id]
+      @application_id = options[:application_id]
       @request_prefix = Time.now.to_i
       @request_id     = 0
+      @connection     = connection
+      raise ArgumentError,"workstation_id required" unless @workstation_id
+      raise ArgumentError,"application_id required" unless @application_id
+      raise ArgumentError,"invalid connection" unless connection.kind_of?(OPI::Connection)
     end
 
     def next_id
@@ -18,22 +25,26 @@ module OPI
       "#{@request_prefix}_#{@request_id}"
     end
 
+    def time_stamp
+      Time.now.xmlschema(3)
+    end
+
     def request_params(type)
       [
         'RequestType' => type,
         'ApplicationSender' => @application_id, # Identifies the application sending the request.
-        'WorkstationID' =>@workstation_id,
+        'WorkstationID' => @workstation_id,
         'RequestID' => next_id
       ]
     end
 
-    def service_request_xml(type, &block)
+    def service_request(type, &block)
       XmlBuilder.new(:header => HEADER) do |xml|
         xml.ServiceRequest(*request_params(type), &block)
       end
     end
 
-    def card_request_xml(type, &block)
+    def card_request(type, &block)
       XmlBuilder.new(:header => HEADER) do |xml|
         xml.CardServiceRequest(*request_params(type), &block)
       end
@@ -41,6 +52,7 @@ module OPI
 
     def parse_xml(xml)
       raise OPI::Error, 'missing XML' unless xml
+
       begin
         Nokogiri::XML(xml)
       rescue Exception
@@ -119,22 +131,80 @@ module OPI
       out
     end
 
-    def device_response_xml(info, status, &block)
+
+
+    def format_device_response(request, response)
       XmlBuilder.new(:header => HEADER) do |xml|
         status = {
-          'RequestType'=>info['RequestType'],
+          'RequestType'=>request['RequestType'],
           'ApplicationSender'=>@application_id,  # Identifies the application sending the request.
           'WorkstationID'=>@workstation_id,      # Identifies the logical workstation (associated to the socket) receiving the response.
-          'RequestID'=>info['RequestID'],        # ID of the request; for univocal referral Echo.
-          'OverallResult'=>status,               # result of the requested operation
+          #'POPID'                                # Necessary when Point Of Payment is not coincident with Workstation
+          #'TerminalID'                          # Identifies the terminal/device proxy involved.
+          'RequestID'=>request['RequestID'],     # ID of the request; for univocal referral Echo.
+          #SequenceID                            # Used if one request is composed of multiple requests;
+          #ReferenceRequestID,                   # Reference to a request: used in case of abort request.
+          #'OverallResult'=>                     # result of the requested operation
         }
-        # ReferenceRequestID,                   # Reference to a request: used in case of abort request.
-        status['TerminalID'] = info['TerminalID'] if info['TerminalID'] # Identifies the terminal/device proxy involved.
-        status['SequenceID'] = info['SequenceID'] if info['SequenceID'] # Used if one request is composed of multiple requests;
-        status['POPID'] = info['POPID']           if info['POPID']      # Necessary when Point Of Payment is not coincident with Workstation
-        xml.DeviceResponse(status, &block)
+        xml.DeviceResponse(*status) do |xml|
+          # can have up to 2 Output elements.
+          if output
+            xml.Output('OutDeviceTarget'=>'xx','OutResult'=>result)
+          end
+          # if input
+          #   xml.Input #...
+          # end
+        end
       end
     end
+
+
+
+
+
+    # POS logon to EPS application. Login operates per Workstation, independently from the
+    # POPID.
+    # Login does not imply any diagnostic process on the devices (processes to be triggered
+    # explicitly through the Diagnosis).
+    # A second login without a prior logoff is accepted every time (e.g. POS crashes).
+    def login
+      xml = service_request('Login') do |xml|
+        xml.POSdata do |xml|
+          xml.POSTimeStamp time_stamp
+        end
+      end
+      parse_service_response(@connection.request(xml.to_s))['success']
+    end
+
+    # POS logoff from EPS application. Used to terminate operations with the POS or in case of
+    # configuration, administration.
+    # Logoff operates per Workstation, independently from the POPID.
+    def logoff
+      xml = service_request('Logoff') do |xml|
+        xml.POSdata do |xml|
+          xml.POSTimeStamp time_stamp
+        end
+      end
+      parse_service_response(@connection.request(xml.to_s))['success']
+    end
+
+    def card_payment(amount, id = nil)
+      raise OPI::Error, 'amount missing' unless amount
+
+      amount = amount.to_f
+      raise OPI::Error, 'amount must be > 0' unless amount > 0
+
+      xml = card_request('CardPayment') do |xml|
+        xml.POSdata do |xml|
+          xml.POSTimeStamp time_stamp
+          xml.TransactionNumber(id.to_s) if id
+        end
+        xml.TotalAmount('%.2f' % amount)
+      end
+      parse_card_response @connection.request(xml.to_s)
+    end
+
+    def reconcile; end
 
   end
 end
