@@ -1,6 +1,8 @@
 require_relative '../lib/blix/opi'
 
-c = OPI::Connection.new
+l = Logger.new(STDOUT)
+$VERBOSE=true
+c = OPI::Connection.new(:local_port=>2000, :remote_port=>2000, :logger=>l)
 
 count = 0
 c.listen do |msg|

@@ -19,15 +19,17 @@ module OPI
 
   class Connection
 
+    attr_reader :logger
+
     def initialize(opts={})
-      @local_ip    = "127.0.0.1"  # the local ip
-      @local_port  = 2000         # port to listen on ( channel 1) 4102
-      @remote_ip   = "127.0.0.1"  # ip of EPS
-      @remote_port = 2000         # port of EPS ( channel 0) 4100
-      @timeout0    = 120       # time between a connect and the message
-      @timeout1    = 330       # time between request and response
-      @timeout2    = 300       # time between last message on channel0 or ..
-                                #   channel1 and a message from EPS on channel1.
+      @local_ip    = opts[:local_host]  || "localhost"   # the local ip
+      @local_port  = opts[:local_port]  || 4102          # port to listen on ( channel 1) 4102
+      @remote_ip   = opts[:remote_host] || "localhost"   # ip of EPS
+      @remote_port = opts[:remote_port] || 4100          # port of EPS ( channel 0) 4100
+      @timeout0    = opts[:timeout_0]   || 120           # time between a connect and the message
+      @timeout1    = opts[:timeout_1]   || 330           # time between request and response
+      @timeout2    = opts[:timeout_2]   || 300           # time between any messages
+      @logger      = opts[:logger]
     end
 
     # make a connection to the EPS
@@ -46,12 +48,15 @@ module OPI
       s = TCPSocket.open(@remote_ip, @remote_port)
       s.send(startbytes,0)
       s.send(msg,0)
+      log "[request OUT  ]=>#{msg}"
       maxtime = Time.now + @timeout1
       startbytes = socket_timeout(s, maxtime, 4)
       len = startbytes.unpack('N')[0]
-      socket_timeout(s, maxtime, len)
+      resp = socket_timeout(s, maxtime, len)
+      log "[request REPLY]=>#{resp}"
+      resp
     ensure
-      s.close
+      s&.close
     end
 
     # listen for requests from the EPS
@@ -64,6 +69,7 @@ module OPI
           startbytes = socket_timeout(s, maxtime, 4)
           len = startbytes.unpack('N')[0]
           msg = socket_timeout(s, maxtime, len)
+          log "[listen IN  ]=>#{msg}"
           resp = block && block.call(msg)
           resp = resp.to_s
           startbytes = [resp.bytesize].pack('N')
@@ -71,8 +77,9 @@ module OPI
           # at the other end.
           s.send(startbytes,0)
           s.send(resp,0)
-        rescue Exception
-            # just ignore the error for now.
+          log "[listen OUT ]=>#{resp}"
+        rescue Exception=>e
+          log("[listen ERROR]=>#{e.to_s}")
         ensure
           s.close
         end
@@ -85,15 +92,26 @@ module OPI
       out = String.new
       loop do
         timeout = maxtime - Time.now
-        raise TimeoutError if timeout <= 0
+        do_timeout if timeout <= 0
         if IO.select([sock],nil,nil,timeout)
           out += sock.recv_nonblock(maxlen)
         else
-          raise TimeoutError
+          do_timeout
         end
         break if out.length >= maxlen
       end
       out
+    end
+
+    def log(msg)
+      if $DEBUG || $VERBOSE
+        @logger && @logger.info(msg)
+      end
+    end
+
+    def do_timeout
+      log("[TIMEOUT]")
+      raise TimeoutError
     end
 
   end # Connection

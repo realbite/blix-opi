@@ -2,10 +2,10 @@ require 'spec_helper'
 require 'json'
 
 module OPI
-  describe Request do
+  describe Protocol do
 
     it "should parse service response" do
-      r = Request.new
+      r = Protocol.new(Connection.new, :workstation_id=>'xx', :application_id=>'yy')
       xml = File.read 'resources/service_response_success.xml'
       status = r.parse_service_response(xml)
       puts JSON.pretty_generate(status)
@@ -17,7 +17,7 @@ module OPI
     end
 
     it "should parse card service response" do
-      r = Request.new
+      r = Protocol.new(Connection.new, :workstation_id=>'xx', :application_id=>'yy')
       xml = File.read 'resources/card_service_response.xml'
       status = r.parse_card_response(xml)
       puts JSON.pretty_generate(status)
@@ -29,6 +29,19 @@ module OPI
       expect(status['success']).to be true
 
     end
+
+    it "should parse device request" do
+      r = Protocol.new(Connection.new, :workstation_id=>'xx', :application_id=>'yy')
+      xml = File.read 'resources/device_request1.xml'
+      status = r.parse_device_request(xml)
+      puts JSON.pretty_generate(status)
+
+
+      xml = File.read 'resources/device_request2.xml'
+      status = r.parse_device_request(xml)
+      puts JSON.pretty_generate(status)
+    end
+
 
   end
 

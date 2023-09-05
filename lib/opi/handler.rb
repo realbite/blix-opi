@@ -12,48 +12,46 @@ module OPI
 
     end
 
-    # the RequestType can be of the following
-    #   Input
-    #   Output
-    #   SecureInput
-    #   SecureOutput
-    #   AbortInput
-    #   AbortOutput
-    #   RepeatLastMessage
-    #   Event
+    
 
-    def parse_device_request(xml)
-      raise OPI::Error, 'missing XML' unless xml
-
+    def process(xml)
       begin
-        doc = Nokogiri::XML(xml){ |conf| conf.noblanks }
-      rescue Exception
-        raise OPI::Error, 'invalid XML'
+        request = parse_device_request(xml)
+      rescue OPI::Error=>e
+        Response.new(:result=>Result::ParsingError)
+      rescue Exception=>e
+        Response.new(:result=>Result::FormatError)
       end
 
-      node = doc&.css('DeviceRequest')&.first
-      raise OPI::Error, 'invalid device request' unless node
-      #input = node&.css('Input')&.first  # only one input allowed
-      output   = node&.css('Output')     # can have up to two outputs
-      out = node.to_h
-      #out['Input'] = input.to_s if input
-      if output
-        out['Output'] = output.map{|n|
-          h = n.to_h
-          h['device'] = n.attr('OutDeviceTarget')
-          h['lines'] = n.children.map{|c|
-            c.to_h.merge(:text=>c.text, :type=>c.name)
-          }
-          h
-        }
+      type = request['RequestType']
+      # this is the main request type. an inpu reqest can also contain
+      # output elements that are eg a prompt.
+
+      # go through each output and process through the relevant handler..
+      results = []
+      overall_result = Result::Success
+      request['Output'].each do |info|
+        device = info['device']
+        handler = Handler.get_handler(device)
+        results << if handler
+          begin
+            res = handler.process(info)
+            res || Result::Failure
+          rescue Exception=>e
+            Result::Failure
+          end
+        else
+          Result::DeviceUnavailable
+        end
       end
-      out
-    end
+      # if the request type is output then only check the ou
+      # if we have all successes then the overall result is success.
+      # if we have at least one success and failures then partial success
+      # all failures the overall failure.
+
+      #
 
 
-
-
-    def process(msg)
 
     end
   end

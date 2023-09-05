@@ -5,19 +5,24 @@ module OPI
   # OPI protocol xml then send to the server using the connection.
   # parse the returned xml and extract key fields to use
   # as an appropriate return value.
-  class Request
+  class Protocol
 
     HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
-    def initialize
-      @workstation_id = 'pos1'
-      @application_id = 'DemiPOS'
+    def initialize(connection, options)
+      @workstation_id = options[:workstation_id]
+      @application_id = options[:application_id]
+      @request_prefix = Time.now.to_i
       @request_id     = 0
-      @connection     = Connection.new
+      @connection     = connection
+      raise ArgumentError,"workstation_id required" unless @workstation_id
+      raise ArgumentError,"application_id required" unless @application_id
+      raise ArgumentError,"invalid connection" unless connection.kind_of?(OPI::Connection)
     end
 
     def next_id
       @request_id += 1
+      "#{@request_prefix}_#{@request_id}"
     end
 
     def time_stamp
@@ -27,7 +32,7 @@ module OPI
     def request_params(type)
       [
         'RequestType' => type,
-        'ApplicationSender' => @application_id,
+        'ApplicationSender' => @application_id, # Identifies the application sending the request.
         'WorkstationID' => @workstation_id,
         'RequestID' => next_id
       ]
@@ -62,7 +67,7 @@ module OPI
       doc = parse_xml(xml)
       node = doc&.css('ServiceResponse')&.first
       raise OPI::Error, 'invalid service response' unless node
-      node.to_h.merge('success' => node.attr('OverallResult') == 'Success')
+      node.to_h.merge('success' => node.attr('OverallResult') == Result::Success)
     end
 
     def parse_card_response(xml)
@@ -77,7 +82,7 @@ module OPI
       raise OPI::Error, 'invalid card service response (Terminal missing)' unless terminal
 
       node.to_h.merge(
-        'success' => node.attr('OverallResult') == 'Success',
+        'success' => node.attr('OverallResult') == Result::Success,
         'amount' => amount&.text.to_f,
         'Terminal' => terminal.to_h,
         'Tender' => {
@@ -86,6 +91,76 @@ module OPI
         }
       )
     end
+
+    # the RequestType can be of the following
+    #   Input
+    #   Output
+    #   SecureInput
+    #   SecureOutput
+    #   AbortInput
+    #   AbortOutput
+    #   RepeatLastMessage
+    #   Event
+
+    # In case of output to the printer, the absence of TextLine means that the printer has to be tested only to
+    # know if it is ready to print so in a correct status). This test is always involving the flag Immediate as true.
+
+    def parse_device_request(xml)
+      raise OPI::Error, 'missing XML' unless xml
+
+      begin
+        doc = Nokogiri::XML(xml){ |conf| conf.noblanks }
+      rescue Exception
+        raise OPI::Error, 'invalid XML'
+      end
+
+      node = doc&.css('DeviceRequest')&.first
+      raise OPI::Error, 'invalid device request' unless node
+      #input = node&.css('Input')&.first   # only one input allowed
+      output   = node&.css('Output') || [] # can have up to two outputs
+      out = node.to_h
+      #out['Input'] = input.to_s if input
+      out['Output'] = output.map{|n|
+        h = n.to_h
+        h['device'] = n.attr('OutDeviceTarget')
+        h['lines'] = n.children.map{|c|
+          c.to_h.merge(:text=>c.text, :type=>c.name)
+        }
+        h
+      }
+      out
+    end
+
+
+
+    def format_device_response(request, response)
+      XmlBuilder.new(:header => HEADER) do |xml|
+        status = {
+          'RequestType'=>request['RequestType'],
+          'ApplicationSender'=>@application_id,  # Identifies the application sending the request.
+          'WorkstationID'=>@workstation_id,      # Identifies the logical workstation (associated to the socket) receiving the response.
+          #'POPID'                                # Necessary when Point Of Payment is not coincident with Workstation
+          #'TerminalID'                          # Identifies the terminal/device proxy involved.
+          'RequestID'=>request['RequestID'],     # ID of the request; for univocal referral Echo.
+          #SequenceID                            # Used if one request is composed of multiple requests;
+          #ReferenceRequestID,                   # Reference to a request: used in case of abort request.
+          #'OverallResult'=>                     # result of the requested operation
+        }
+        xml.DeviceResponse(*status) do |xml|
+          # can have up to 2 Output elements.
+          if output
+            xml.Output('OutDeviceTarget'=>'xx','OutResult'=>result)
+          end
+          # if input
+          #   xml.Input #...
+          # end
+        end
+      end
+    end
+
+
+
+
 
     # POS logon to EPS application. Login operates per Workstation, independently from the
     # POPID.
