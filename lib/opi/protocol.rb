@@ -119,9 +119,9 @@ module OPI
       out
     end
 
-    def device_response_xml(info, status, &block)
+    def service_response_xml(info, status, &block)
       XmlBuilder.new(:header => HEADER) do |xml|
-        status = {
+        attributes = {
           'RequestType'=>info['RequestType'],
           'ApplicationSender'=>@application_id,  # Identifies the application sending the request.
           'WorkstationID'=>@workstation_id,      # Identifies the logical workstation (associated to the socket) receiving the response.
@@ -132,7 +132,41 @@ module OPI
         status['TerminalID'] = info['TerminalID'] if info['TerminalID'] # Identifies the terminal/device proxy involved.
         status['SequenceID'] = info['SequenceID'] if info['SequenceID'] # Used if one request is composed of multiple requests;
         status['POPID'] = info['POPID']           if info['POPID']      # Necessary when Point Of Payment is not coincident with Workstation
-        xml.DeviceResponse(status, &block)
+        xml.ServiceResponse(attributes, &block)
+      end
+    end
+
+    def card_response_xml(info, status, &block)
+      XmlBuilder.new(:header => HEADER) do |xml|
+        attributes = {
+          'RequestType'=>info['RequestType'],
+          'ApplicationSender'=>@application_id,  # Identifies the application sending the request.
+          'WorkstationID'=>@workstation_id,      # Identifies the logical workstation (associated to the socket) receiving the response.
+          'RequestID'=>info['RequestID'],        # ID of the request; for univocal referral Echo.
+          'OverallResult'=>status,               # result of the requested operation
+        }
+        # ReferenceRequestID,                   # Reference to a request: used in case of abort request.
+        status['TerminalID'] = info['TerminalID'] if info['TerminalID'] # Identifies the terminal/device proxy involved.
+        status['SequenceID'] = info['SequenceID'] if info['SequenceID'] # Used if one request is composed of multiple requests;
+        status['POPID'] = info['POPID']           if info['POPID']      # Necessary when Point Of Payment is not coincident with Workstation
+        xml.CardServiceResponse(attributes, &block)
+      end
+    end
+
+    def device_response_xml(info, status, &block)
+      XmlBuilder.new(:header => HEADER) do |xml|
+        attributes = {
+          'RequestType'=>info['RequestType'],
+          'ApplicationSender'=>@application_id,  # Identifies the application sending the request.
+          'WorkstationID'=>@workstation_id,      # Identifies the logical workstation (associated to the socket) receiving the response.
+          'RequestID'=>info['RequestID'],        # ID of the request; for univocal referral Echo.
+          'OverallResult'=>status,               # result of the requested operation
+        }
+        # ReferenceRequestID,                   # Reference to a request: used in case of abort request.
+        status['TerminalID'] = info['TerminalID'] if info['TerminalID'] # Identifies the terminal/device proxy involved.
+        status['SequenceID'] = info['SequenceID'] if info['SequenceID'] # Used if one request is composed of multiple requests;
+        status['POPID'] = info['POPID']           if info['POPID']      # Necessary when Point Of Payment is not coincident with Workstation
+        xml.DeviceResponse(attributes, &block)
       end
     end
 

@@ -21,7 +21,7 @@ module OPI
       # raise ArgumentError, "application_id required" unless opts[:application_id]
       @opts[:logger] ||= Logger.new(STDOUT)
       @connection = opts[:connection] || Connection.new(@opts)
-      @parser     = Protocol.new
+      @parser     = Protocol.new(opts)
       @devices = {}
     end
 
@@ -146,6 +146,10 @@ module OPI
 
     def time_stamp
       Time.now.xmlschema(3)
+    end
+
+    def log(msg)
+      @connection.log(msg)
     end
 
   end

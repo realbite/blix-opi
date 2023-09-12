@@ -42,6 +42,7 @@ configure the interface to the terminal and create a connection object
        :timeout_0         # timeout between a connect and message
        :timeout_1         # timeout between request and response
        :timeout_2         # timeout between any messages with terminal
+       :verbose           # false/true verbose logging detail
     }
 
 

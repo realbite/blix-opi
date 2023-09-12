@@ -30,6 +30,7 @@ module OPI
       @timeout1    = opts[:timeout_1]   || 330           # time between request and response
       @timeout2    = opts[:timeout_2]   || 300           # time between any messages
       @logger      = opts[:logger]
+      @verbose     = opts[:verbose]
     end
 
     # make a connection to the EPS
@@ -104,7 +105,7 @@ module OPI
     end
 
     def log(msg)
-      if $DEBUG || $VERBOSE
+      if @verbose || $DEBUG || $VERBOSE
         @logger && @logger.info(msg)
       end
     end
